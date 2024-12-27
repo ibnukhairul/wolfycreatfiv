@@ -1,0 +1,211 @@
+<form name="submit-to-google-sheet">
+    <input name="Nama" type="text" placeholder="Nama" required>
+
+    <!-- Dropdown untuk layanan -->
+    <label for="Layanan">Layanan:</label>
+    <select name="Layanan" id="Layanan" required>
+        <option value="Redraw">Redraw</option>
+        <option value="Costum">Costum</option>
+        <option value="Desain Printing">Desain Printing</option>
+        <option value="Pecah Warna">Pecah Warna</option>
+        <option value="custom">Layanan Lain</option>
+    </select>
+
+    <!-- Dropdown untuk harga -->
+    <label for="Harga">Harga:</label>
+    <select name="Harga" id="Harga" required>
+        <option value="70000">70000</option>
+        <option value="120000">120000</option>
+        <option value="200000">200000</option>
+        <option value="250000">250000</option>
+        <option value="custom">Custom Harga</option>
+    </select>
+
+    <!-- Input untuk harga kustom (disembunyikan secara default) -->
+    <label for="customHarga" id="customHargaLabel" style="display:none;">Harga Kustom:</label>
+    <input name="customHarga" id="customHarga" type="number" placeholder="Masukkan harga kustom" style="display:none;">
+
+    <button type="submit">Send</button>
+</form>
+
+<script>
+    // Menambahkan event listener untuk menangani perubahan pilihan pada dropdown
+    document.getElementById("Layanan").addEventListener("change", toggleCustomFields);
+    document.getElementById("Harga").addEventListener("change", toggleCustomFields);
+
+    function toggleCustomFields() {
+        const harga = document.getElementById("Harga").value;
+        const customHargaInput = document.getElementById("customHarga");
+
+        if (harga === "custom") {
+            // Tampilkan input harga kustom jika 'custom' dipilih
+            document.getElementById("customHarga").style.display = "block";
+            document.getElementById("customHargaLabel").style.display = "block";
+        } else {
+            // Sembunyikan input harga kustom dan kosongkan isinya jika harga standar dipilih
+            document.getElementById("customHarga").style.display = "none";
+            document.getElementById("customHargaLabel").style.display = "none";
+            customHargaInput.value = '';  // Kosongkan input harga kustom
+        }
+    }
+
+    // Menangani pengiriman formulir ke Google Sheets
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzQgwQfQtwnMAonAs2tKBsz__E9TTmxZWlSqMc7Ao0_vC1ZagNMelDzW-vUTCV6XsPWZA/exec';
+    const form = document.forms['submit-to-google-sheet'];
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+
+        // Mendapatkan elemen harga dan harga kustom
+        const harga = document.getElementById("Harga").value;
+        const customHarga = document.getElementById("customHarga").value;
+
+        // Jika harga custom dipilih dan harga kustom diisi, set harga custom
+        let hargaToSend = harga;
+        let hargaCustomToSend = '';
+
+        if (harga === "custom" && customHarga) {
+            hargaToSend = '';  // Tidak mengirimkan harga standar jika harga custom dipilih
+            hargaCustomToSend = customHarga; // Mengirimkan harga kustom ke kolom harga_custom
+        }
+
+        // Kirim data formulir ke Google Sheets
+        const formData = new FormData(form);
+        formData.append('Harga', hargaToSend);  // Tambahkan nilai harga yang sesuai
+        formData.append('harga_custom', hargaCustomToSend);  // Tambahkan nilai harga kustom jika ada
+
+        // Mengirimkan data ke Google Sheets
+        fetch(scriptURL, { method: 'POST', body: formData })
+            .then(response => console.log('Success!', response))
+            .catch(error => console.error('Error!', error.message));
+    });
+</script>
+
+<style>
+    /* Umum styling untuk form */
+    form {
+        max-width: 500px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Styling untuk label */
+    label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+    }
+
+    /* Styling untuk input teks dan dropdown */
+    input[type="text"],
+    input[type="number"],
+    select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    /* Styling untuk button submit */
+    button[type="submit"] {
+        width: 100%;
+        padding: 12px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+
+    /* Styling untuk input harga kustom */
+    #customHarga,
+    #customHargaLabel {
+        display: none;
+    }
+
+    /* Styling untuk input field custom harga ketika tampil */
+    #customHargaLabel {
+        margin-top: 10px;
+    }
+
+    /* Styling untuk input field ketika tidak terisi */
+    input[placeholder] {
+        font-style: italic;
+        color: #aaa;
+    }
+
+    /* Styling untuk dropdown */
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: #fff url('https://img.icons8.com/ios-filled/50/000000/arrow.png') no-repeat right 10px center;
+        background-size: 12px;
+    }
+
+    /* Styling untuk tombol setelah dihover */
+    button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+
+    /* RESPONSIVE DESIGN */
+    /* Untuk perangkat mobile */
+    @media screen and (max-width: 768px) {
+        form {
+            padding: 15px;
+        }
+
+        label {
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        button[type="submit"] {
+            padding: 10px;
+            font-size: 14px;
+        }
+    }
+
+    /* Untuk perangkat kecil (smartphone portrait) */
+    @media screen and (max-width: 480px) {
+        form {
+            width: 100%;
+            padding: 10px;
+        }
+
+        label {
+            font-size: 12px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            font-size: 13px;
+        }
+
+        button[type="submit"] {
+            font-size: 14px;
+            padding: 12px;
+        }
+    }
+</style>
